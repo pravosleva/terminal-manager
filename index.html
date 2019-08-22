@@ -161,6 +161,7 @@
               <tr>
                 <th>Description</th>
                 <th>user@host</th>
+                <th>ssh status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -267,14 +268,14 @@
     const terms = document.getElementById('terms');
 
     mainSpace.addEventListener('scroll', function() {
-      // For window:
+      // For window could be like this:
       // if (this.pageYOffset > 0) { scrollTop.style.transform = 'translateX(0)'; }
       // else { scrollTop.style.transform = 'translateX(100px)'; };
 
       const mainSpaceScrollTop = mainSpace.scrollTop;
       const mainSpaceOffsetTop = mainSpace.offsetTop;
-      const termsPositionInfo = terms.getBoundingClientRect();
-      const termsHeight = termsPositionInfo.height;
+      // const termsPositionInfo = terms.getBoundingClientRect();
+      // const termsHeight = termsPositionInfo.height;
       const mainSpaceOffsetHeight = mainSpace.offsetHeight;
       const mainSpaceClientHeight = mainSpace.clientHeight;
       // console.log(mainSpaceScrollTop, mainSpaceOffsetHeight, mainSpaceClientHeight);

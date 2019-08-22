@@ -1,5 +1,9 @@
 # Terminal manager
 
+![about MEG density](./_imgs/sample.gif)
+
+## Stack
+
 - [Electron](https://electronjs.org/)
 - [Xterm.js](https://xtermjs.org/)
 - [SSH2](https://www.npmjs.com/package/ssh2/)
@@ -9,9 +13,12 @@
 - HTML / CSS / JS
 
 ## TODO
+- [ ] Add terminal statuses _(In progress)_
+- [ ] uptime, cpu params (free memory, etc.)
+- [ ] Change settings for the terminal
+- [ ] Deploy sample
 - [ ] Save settings to localStorage
 - [ ] Get data from locaStorage and set to app state
-- [ ] Status (errored or not)
 
 ### `yarn start`
 Production mode start.
