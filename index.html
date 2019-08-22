@@ -1,0 +1,275 @@
+<html>
+<head>
+  <link rel='stylesheet' href='node_modules/xterm/dist/xterm.css' />
+  <script src='node_modules/xterm/dist/xterm.js'></script>
+  <title>Terminal manager</title>
+  <link rel='stylesheet' href='./css/photon.min.css' />
+  <link rel='stylesheet' href='./css/micromodal.css' />
+  <!-- AlertifyJS -->
+  <!-- <script src="./vendor/alertifyjs/alertify.js"></script> -->
+  <link rel="stylesheet" href="./vendor/alertifyjs/css/alertify.min.css"/>
+  <link rel="stylesheet" href="./vendor/alertifyjs/css/themes/default.min.css"/>
+  <style>
+    button.modal__close, button.modal__btn { outline: none; cursor: pointer; }
+
+    /* AlertifyJS */
+    .alertify-notifier .ajs-message {
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      border: 2px solid #FFF;
+      color: rgb(66, 104, 178);
+      background-color: #F3F3F3;
+    }
+    button.ajs-ok {
+      color: #4268B2 !important;
+    }
+
+    #scrollTopBtn {
+      position: fixed; bottom: 32px; right: 32px;
+      border-radius: 50%;
+      font-size: 20px;
+      height: 56px;
+      margin: auto;
+      min-width: 56px;
+      width: 56px;
+      padding: 0;
+      background: rgba(255, 255, 255, 0.5); color: rgb(66, 104, 178); border: 1px solid rgb(66, 104, 178);
+      transform: translateX(100px);
+      transition: all 0.5s linear;
+      outline: none;
+      cursor: pointer;
+      background-color: #F3F3F3;
+    }
+    #scrollTopBtn > span { cursor: pointer; }
+
+    #terms > div:not(:last-child) {
+      border-bottom: 2px solid white !important;
+    }
+    .top-btn {
+      border: none;
+      border-radius: 0px;
+      cursor: pointer;
+      outline: none;
+    }
+    .top-btn:hover { background-color: gray; color: white; }
+  </style>
+</head>
+<body>
+  <div class='window'>
+    <div style='display: flex;'>
+      <button style='width: 50%;' data-micromodal-trigger='modal-1' class='top-btn'>Create new Terminal <span class='icon icon-plus-circled'></span></button>
+      <button style='width: 50%;' class='top-btn' onclick='saveToLS()'>Save to LS <span class='icon icon-floppy'></span></button>
+    </div>
+
+    <div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
+      <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <header class="modal__header">
+            <h2 class="modal__title" id="modal-1-title">
+              Create new Terminal
+            </h2>
+            <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+          </header>
+          <main class="modal__content" id="modal-1-content">
+            <!-- <p>Enter your params.</p> -->
+            <form>
+              <div class="form-group">
+                <label>Name</label>
+                <input id="name" type="text" class="form-control" placeholder="Name" />
+              </div>
+              <div class="form-group">
+                <label>user@host</label>
+                <input id="userHost" type="text" class="form-control" placeholder="user@host" />
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input id="password" type="password" class="form-control" placeholder="Password" />
+              </div>
+              <div class="form-group">
+                <label>Description</label>
+                <textarea id="description" class="form-control" rows="3"></textarea>
+              </div>
+              <!--
+              <select class="form-control">
+                <option>Option one</option>
+                <option>Option two</option>
+                <option>Option three</option>
+                <option>Option four</option>
+                <option>Option five</option>
+                <option>Option six</option>
+                <option>Option seven</option>
+                <option>Option eight</option>
+              </select>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox"> This is a checkbox
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox"> This is a checkbox too
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" name="radios" checked>
+                  Keep your options open
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" name="radios">
+                  Be sure to remember to check for unknown unknowns
+                </label>
+              </div>
+              -->
+              <!--
+              <div class="form-actions">
+                <button type="submit" class="btn btn-form btn-default">Cancel</button>
+                <button type="submit" class="btn btn-form btn-primary">OK</button>
+              </div>
+              -->
+            </form>
+
+          </main>
+          <footer class="modal__footer">
+            <button
+              class="modal__btn modal__btn-primary"
+              onclick="add()"
+            >
+              Continue
+            </button>
+            <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <table class="table-striped">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>user@host</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="terms-tab-body">
+      </tbody>
+    </table>
+
+    <div id='terms'></div>
+
+    <button id="scrollTopBtn"><span class="icon icon-up-open"></span></button>
+  </div>
+
+  <script type='text/javascript'>
+    const alertify = require('alertifyjs');
+    alertify.defaults = { // dialogs defaults
+      autoReset: true,
+      basic: false,
+      closable: true,
+      closableByDimmer: true,
+      frameless: false,
+      maintainFocus: true, // <== global default not per instance, applies to all dialogs
+      maximizable: true,
+      modal: true,
+      movable: true,
+      moveBounded: false,
+      overflow: true,
+      padding:  true,
+      pinnable: true,
+      pinned: true,
+      preventBodyShift: false, // <== global default not per instance, applies to all dialogs
+      resizable: true,
+      startMaximized: false,
+      transition: 'pulse',
+      // notifier defaults
+      notifier:{
+        delay: 7, // auto-dismiss wait time (in seconds)
+        position: 'bottom-center', // bottom-center is default position
+        closeButton: false, // adds a close button to notifier messages
+      },
+      // language resources
+      glossary:{
+        title: 'Terminal manager', // dialogs default title
+        ok: 'OK', // ok button text
+        cancel: 'Cancel', // cancel button text
+      },
+      // theme settings
+      theme:{
+        input: 'ajs-input', // class name attached to prompt dialog input textbox.
+        ok: 'ajs-ok', // class name attached to ok button
+        cancel: 'ajs-cancel', // class name attached to cancel button
+      }
+    };
+    const MicroModal = require('micromodal');
+    const yup = require('yup');
+
+    let schema = yup.object().shape({
+      name: yup.string().required(),
+      description: yup.string().required(),
+      userHost: yup.string().required(),
+      password: yup.string().required(),
+    });
+    // number().test('is-42', "this isn't the number i want", value =>
+    //   Promise.resolve(value != 42),
+    // );
+
+    MicroModal.init({
+      onShow: modal => console.info(`${modal.id} is shown`), // [1]
+      onClose: modal => console.info(`${modal.id} is hidden`), // [2]
+      // openTrigger: 'data-custom-open', // [3]
+      // closeTrigger: 'data-custom-close', // [4]
+      disableScroll: true, // [5]
+      disableFocus: false, // [6]
+      awaitCloseAnimation: false, // [7]
+      debugMode: true // [8]
+    });
+    // MicroModal.show('modal-1'); // [1]
+    // MicroModal.close('modal-1'); // [1]
+
+    const add = () => {
+      const name = document.getElementById('name').value;
+      const description = document.getElementById('description').value;
+      const userHost = document.getElementById('userHost').value;
+      const password = document.getElementById('password').value;
+      const obj = { name, description, userHost, password };
+
+      schema.validate({ ...obj })
+        .then(function(valid) {
+          // console.log(valid);
+          // console.table({ ...obj });
+
+          window.addTerminal({ ...obj });
+          // MicroModal.close('modal-1'); // [1]
+          document.getElementsByClassName('modal__close')[0].click();
+        })
+        .catch(err => {
+          if (err && err.errors && Array.isArray(err.errors)) {
+            err.errors.forEach(function(e) {
+              alertify.message(e);
+            });
+          }
+        });
+    };
+
+    // AUXILIARY
+    const scrollTop = document.getElementById('scrollTopBtn');
+
+    window.addEventListener('scroll', function() {
+      if (this.pageYOffset > 0) {
+        scrollTop.style.transform = 'translateX(0)';
+      } else {
+        scrollTop.style.transform = 'translateX(100px)';
+      };
+    });
+    scrollTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    function saveToLS() {
+      alertify.message('In process');
+    }
+  </script>
+
+</body>
+</html>

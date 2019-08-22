@@ -1,0 +1,22 @@
+{
+  "name": "terminal-manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "dev": "NODE_ENV=development electron .",
+    "start": "NODE_ENV=production electron ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "alertifyjs": "^1.11.4",
+    "micromodal": "^0.4.0",
+    "path": "^0.12.7",
+    "ssh2": "^0.6.1",
+    "terminal-kit": "^1.26.2",
+    "xterm": "^3.6.0",
+    "xterm-webfont": "^1.1.1",
+    "yup": "^0.27.0"
+  }
+}

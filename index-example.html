@@ -1,0 +1,47 @@
+<html>
+<head>
+  <link rel="stylesheet" href="node_modules/xterm/dist/xterm.css" />
+  <script src="node_modules/xterm/dist/xterm.js"></script>
+  <title>Test</title>
+</head>
+<body>
+  <div id="terminal"></div>
+  <div id="terms"></div>
+  <button onclick="window.addElement()">addElement</button>
+  <script>
+    var term = new Terminal();
+    term.open(document.getElementById('terminal'));
+
+    var Client = require('ssh2').Client;
+    var conn = new Client();
+
+    conn.connect({
+      host: 'YOUR_HOST',
+      port: 22,
+      username: 'YOUR_USER',
+      password: 'YOUR_PASSWD'
+    });
+
+    conn.on('ready', function() {
+      console.log('Client :: ready');
+      conn.shell(function(err, stream) {
+       if (err) throw err;
+        stream.on('close', function() {
+          console.log('Stream :: close');
+          term.write('Connection closed')
+          conn.end();
+        }).on('data', function(data) {
+          term.write(data.toString());
+        }).stderr.on('data', function(data) {
+          term.write(data.toString());
+        });
+
+        term.on('key', function(key, e) {
+          stream.write(key);
+        });
+      });
+    });
+
+  </script>
+</body>
+</html>
