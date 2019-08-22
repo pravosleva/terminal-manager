@@ -11,6 +11,10 @@ function createWindow () {
   win = new BrowserWindow({
     width: 900,
     height: 600,
+    'min-width': 800,
+    'min-height': 500,
+    'accept-first-mouse': true,
+    'title-bar-style': 'hidden',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true
@@ -19,6 +23,7 @@ function createWindow () {
 
   // and load the index.html of the app.
   win.loadFile('index.html');
+  // win.loadUrl('file://' + __dirname + '/index.html');
 
   if (dev) {
     // Open the DevTools.

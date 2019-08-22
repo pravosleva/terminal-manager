@@ -10,7 +10,8 @@
 
 ## TODO
 - [ ] Save settings to localStorage
-- [ ] Interface should be re-designed
+- [ ] Get data from locaStorage and set to app state
+- [ ] Status (errored or not)
 
 ### `yarn start`
 Production mode start.

@@ -56,10 +56,11 @@
 </head>
 <body>
   <div class='window'>
-    <div style='display: flex;'>
+    <!-- .toolbar-header sits at the top of your app -->
+    <header class="toolbar toolbar-header" style='display: flex;'>
       <button style='width: 50%;' data-micromodal-trigger='modal-1' class='top-btn'>Create new Terminal <span class='icon icon-plus-circled'></span></button>
       <button style='width: 50%;' class='top-btn' onclick='saveToLS()'>Save to LS <span class='icon icon-floppy'></span></button>
-    </div>
+    </header>
 
     <div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
       <div class="modal__overlay" tabindex="-1" data-micromodal-close>
@@ -71,7 +72,6 @@
             <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
           </header>
           <main class="modal__content" id="modal-1-content">
-            <!-- <p>Enter your params.</p> -->
             <form>
               <div class="form-group">
                 <label>Name</label>
@@ -122,8 +122,6 @@
                   Be sure to remember to check for unknown unknowns
                 </label>
               </div>
-              -->
-              <!--
               <div class="form-actions">
                 <button type="submit" class="btn btn-form btn-default">Cancel</button>
                 <button type="submit" class="btn btn-form btn-primary">OK</button>
@@ -144,19 +142,34 @@
         </div>
       </div>
     </div>
-    <table class="table-striped">
-      <thead>
-        <tr>
-          <th>Description</th>
-          <th>user@host</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="terms-tab-body">
-      </tbody>
-    </table>
 
-    <div id='terms'></div>
+    <!-- Your app's content goes inside .window-content -->
+    <div class="window-content">
+      <div class="pane-group">
+        <div class="pane pane-mini sidebar">
+          <nav class="nav-group">
+            <h5 class="nav-group-title">Content</h5>
+
+            <span class="nav-group-item nav-group-item--home active" style='display: flex; justify-content: center; padding: 0;'><span style='padding: 0; margin: 0;' class="icon icon-home active"></span></span>
+            <span class="nav-group-item nav-group-item--terminals" style='display: flex; justify-content: center; padding: 0;'><span style='padding: 0; margin: 0;' class="icon icon-window"></span></span>
+          </nav>
+        </div>
+
+        <div class="pane" id="mainSpace">
+          <table class="table-striped">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>user@host</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="terms-tab-body"></tbody>
+          </table>
+          <div id='terms'></div>
+        </div>
+      </div>
+    </div>
 
     <button id="scrollTopBtn"><span class="icon icon-up-open"></span></button>
   </div>
@@ -210,9 +223,6 @@
       userHost: yup.string().required(),
       password: yup.string().required(),
     });
-    // number().test('is-42', "this isn't the number i want", value =>
-    //   Promise.resolve(value != 42),
-    // );
 
     MicroModal.init({
       onShow: modal => console.info(`${modal.id} is shown`), // [1]
@@ -235,10 +245,7 @@
       const obj = { name, description, userHost, password };
 
       schema.validate({ ...obj })
-        .then(function(valid) {
-          // console.log(valid);
-          // console.table({ ...obj });
-
+        .then(function(valid) { // console.log(valid);
           window.addTerminal({ ...obj });
           // MicroModal.close('modal-1'); // [1]
           document.getElementsByClassName('modal__close')[0].click();
@@ -253,17 +260,55 @@
     };
 
     // AUXILIARY
-    const scrollTop = document.getElementById('scrollTopBtn');
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    const mainSpace = document.getElementById('mainSpace');
+    const navItemHome = document.getElementsByClassName('nav-group-item--home')[0];
+    const navItemTerminals = document.getElementsByClassName('nav-group-item--terminals')[0];
+    const terms = document.getElementById('terms');
 
-    window.addEventListener('scroll', function() {
-      if (this.pageYOffset > 0) {
-        scrollTop.style.transform = 'translateX(0)';
+    mainSpace.addEventListener('scroll', function() {
+      // For window:
+      // if (this.pageYOffset > 0) { scrollTop.style.transform = 'translateX(0)'; }
+      // else { scrollTop.style.transform = 'translateX(100px)'; };
+
+      const mainSpaceScrollTop = mainSpace.scrollTop;
+      const mainSpaceOffsetTop = mainSpace.offsetTop;
+      const termsPositionInfo = terms.getBoundingClientRect();
+      const termsHeight = termsPositionInfo.height;
+      const mainSpaceOffsetHeight = mainSpace.offsetHeight;
+      const mainSpaceClientHeight = mainSpace.clientHeight;
+      // console.log(mainSpaceScrollTop, mainSpaceOffsetHeight, mainSpaceClientHeight);
+
+      if (mainSpaceOffsetHeight < (mainSpaceScrollTop + mainSpaceClientHeight)) {
+        scrollTopBtn.style.transform = 'translateX(0)';
       } else {
-        scrollTop.style.transform = 'translateX(100px)';
-      };
+        scrollTopBtn.style.transform = 'translateX(100px)';
+      }
+
+      // Nav
+      const termsScrollTop = terms.scrollTop;
+      const termsOffsetTop = terms.offsetTop;
+      const termsOffsetHeight = terms.offsetHeight;
+      const termsClientHeight = terms.clientHeight;
+      // console.log('---');
+      // console.log(mainSpaceScrollTop, mainSpaceOffsetHeight, mainSpaceClientHeight, mainSpaceOffsetTop, termsHeight);
+      // console.log(termsScrollTop, termsOffsetHeight, termsClientHeight, termsOffsetTop);
+      if (mainSpaceScrollTop >= termsOffsetTop) {
+        navItemHome.classList.remove('active');
+        navItemTerminals.classList.add('active');
+      } else {
+        navItemHome.classList.add('active');
+        navItemTerminals.classList.remove('active');
+      }
     });
-    scrollTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollTopBtn.addEventListener('click', () => {
+      mainSpace.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    navItemHome.addEventListener('click', () => {
+      mainSpace.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    navItemTerminals.addEventListener('click', () => {
+      mainSpace.scrollTo({ top: terms.offsetTop, behavior: 'smooth' });
     });
 
     function saveToLS() {
