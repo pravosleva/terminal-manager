@@ -57,7 +57,7 @@
     }
     .top-btn:hover { background-color: gray; color: white; }
 
-    #terms > div, #terms > div > div, #terms > div > div > div { border-radius: 5px; }
+    #terms > div, #terms > div > div, #terms > div > div > div { border-radius: 5px 0 0 5px; }
     .xterm .xterm-screen canvas {
       border-radius: inherit;
       padding: 5px;
@@ -231,7 +231,25 @@
     let schema = yup.object().shape({
       name: yup.string().required(),
       description: yup.string().required(),
-      userHost: yup.string().required(),
+      userHost: yup.string().required().test('is-correctly', 'user@host should be checked', val => {
+        if (!val.includes('@')) return false;
+
+        const values = val.split('@');
+
+        if (values.length !== 2) return false;
+
+        const username = values[0];
+
+        if (!(username.length > 0)) return false;
+
+        const host = values[1];
+
+        if (!(host.length > 2)) return false;
+        if (!host.includes('.')) return false;
+        if (host.split('.').length !== 2) return false;
+
+        return true;
+      }),
       password: yup.string().required(),
     });
 
@@ -245,6 +263,7 @@
       awaitCloseAnimation: false, // [7]
       debugMode: true // [8]
     });
+    // EXAMPLE:
     // MicroModal.show('modal-1'); // [1]
     // MicroModal.close('modal-1'); // [1]
 
