@@ -12,6 +12,53 @@ const getUUIDv4 = () => ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
   (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
 );
 
+function getTextFromHTMLString(html, target) {
+  if (!html || !target) {
+    return false;
+  }
+  else {
+    const fragment = document.createDocumentFragment(),
+      container = document.createElement('div');
+    container.innerHTML = html;
+    fragment.appendChild(container);
+    const targets = fragment.firstChild.getElementsByTagName(target),
+      result = [];
+
+    for (var i = 0, len = targets.length; i<len; i++) {
+      result.push(targets[i].textContent || targets[i].innerText);
+    }
+    return result;
+  }
+};
+// EXAMPLE:
+// var spanText = getTextFromHTMLString(htmlString, 'span');
+
+const getSettingsByID = id => {
+  if (!window || !window.document) {
+    return null;
+  }
+  const theNameAndDescription = window.document.getElementById('terms-tab-body-item--nameAndDescription_' + id);
+  const titleAttrValueAsDescr = theNameAndDescription.getAttribute('title');
+  const theUserHost = window.document.getElementById(`terms-tab-body-item--userHost_${id}`).innerHTML;
+  const theName = getTextFromHTMLString(theNameAndDescription.innerHTML, 'strong');
+
+  return {
+    name: theName,
+    description: titleAttrValueAsDescr,
+    password: '',
+    userHost: theUserHost
+  }
+};
+
+const setSettingsToModal = settings => {
+  const { name, description, password, userHost } = settings;
+
+  window.document.getElementById('name').value = name;
+  window.document.getElementById('userHost').value = userHost;
+  window.document.getElementById('password').value = password;
+  window.document.getElementById('description').value = description;
+};
+
 function addTerminal ({
   name,
   description,
@@ -27,14 +74,15 @@ function addTerminal ({
 
   // Column 0: Name & Description
   const td0 = window.document.createElement('td');
-  const shortDescr = getShortString(description, 30);
-  td0.innerHTML = `<strong>${name}</strong> <span>${shortDescr}</span>`;
+  td0.innerHTML = `<strong>${name}</strong> <span>${getShortString(description, 30)}</span>`;
+  td0.setAttribute('id', `terms-tab-body-item--nameAndDescription_${id}`);
   td0.setAttribute('title', description);
   tr.append(td0);
 
   // Column 1: user@host
   const td1 = window.document.createElement('td');
-  td1.innerHTML = `<span>${userHost}</span>`;
+  td1.innerHTML = userHost;
+  td1.setAttribute('id', `terms-tab-body-item--userHost_${id}`);
   tr.append(td1);
 
   // Column 2 - ssh status
@@ -48,20 +96,70 @@ function addTerminal ({
   const btnGroup = window.document.createElement('div');
   btnGroup.setAttribute('class', 'btn-group');
   const scrollToTerminal = window.document.createElement('button');
-  scrollToTerminal.innerHTML = '<span class="icon icon-right-dir"></span>';
+  scrollToTerminal.innerHTML = '<span class="icon icon-window"></span>';
   scrollToTerminal.setAttribute('class', 'btn btn-default');
+  scrollToTerminal.setAttribute('title', 'Scroll to Terminal');
   scrollToTerminal.onclick = function() {
-    // WAY 1
-    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'center' }); // WAY 1
+    // document.getElementById('terms').scrollBy(0, -10);
   };
   btnGroup.append(scrollToTerminal);
+  const closeConnectionBtn = window.document.createElement('button');
+  closeConnectionBtn.innerHTML = '<span class="icon icon-stop"></span>';
+  closeConnectionBtn.setAttribute('class', 'btn btn-default');
+  closeConnectionBtn.setAttribute('title', 'Stop connection');
+  // closeConnectionBtn.onclick = () => {
+  //   console.log('test');
+  // };
+  btnGroup.append(closeConnectionBtn);
+  const uptimeBtn = window.document.createElement('button');
+  uptimeBtn.innerHTML = '<span class="icon icon-clock"></span>';
+  uptimeBtn.setAttribute('class', 'btn btn-default');
+  uptimeBtn.setAttribute('title', 'conn.uptime()');
+  // uptimeBtn.onclick = () => {
+  //   console.log('test');
+  // };
+  btnGroup.append(uptimeBtn);
   const removeBtn = window.document.createElement('button');
-  removeBtn.innerHTML = '<span class="icon icon-block"></span>';
+  removeBtn.innerHTML = '<span class="icon icon-trash"></span>';
   removeBtn.setAttribute('class', 'btn btn-default');
+  removeBtn.setAttribute('title', 'Remove Terminal');
   removeBtn.onclick = () => {
-    removeTerminal(id);
+    try {
+      removeTerminal(id);
+    } catch (err) {
+      console.warn(err);
+    }
   };
   btnGroup.append(removeBtn);
+  const reconnectBtn = window.document.createElement('button');
+  reconnectBtn.innerHTML = '<span class="icon icon-cog"></span>';
+  reconnectBtn.setAttribute('class', 'btn btn-default');
+  reconnectBtn.setAttribute('title', 'Remove and Create with fresh settings');
+  reconnectBtn.onclick = () => {
+    if (MicroModal) {
+      const settings = getSettingsByID(id);
+
+      console.log(id);
+
+      try {
+        removeTerminal(id);
+      } catch (err) {
+        console.warn(err);
+      }
+
+      if (settings) {
+        setSettingsToModal({ ...settings });
+
+        MicroModal.show('modal-1');
+      } else {
+        console.warn('MicroModal could not be opened #2');
+      }
+    } else {
+      console.warn('MicroModal could not be opened #1');
+    }
+  };
+  btnGroup.append(reconnectBtn);
   td3.append(btnGroup);
   tr.append(td3);
   tr.setAttribute('class', `terms-tab-body-item--${id}`);
@@ -71,16 +169,34 @@ function addTerminal ({
   // 2. Add Terminal:
   terms.append(div);
   div.setAttribute('id', id);
-  openTerminal(
-    div, // Terminal space dom elm
-    {
+  const conn = openTerminal({
+    terminalElm: div, // Terminal space dom elm
+    settings: {
       username: userHost.split('@')[0],
       host: userHost.split('@')[1],
       password
     },
-    td2, // ssh status dom elm
-  );
+    statusElm: td2, // ssh status dom elm
+  });
+  closeConnectionBtn.onclick = () => {
+    conn.end();
+  };
+  uptimeBtn.onclick = () => {
+    conn.exec('uptime', function(err, stream) {
+      if (err) throw err;
+      stream.on('close', function(code, signal) {
+        console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+        // conn.end();
+      }).on('data', function(data) {
+        console.log('STDOUT: ' + data);
+      }).stderr.on('data', function(data) {
+        console.log('STDERR: ' + data);
+      });
+    });
+    if (alertify) alertify.message('See console');
+  };
 };
+
 function removeTerminal (id) {
   const terms = window.document.getElementById('terms');
   const termsTabBody = window.document.getElementById('terms-tab-body');
@@ -88,8 +204,15 @@ function removeTerminal (id) {
   terms.removeChild(window.document.getElementById(id));
   termsTabBody.removeChild(window.document.getElementsByClassName(`terms-tab-body-item--${id}`)[0]);
 };
+
 function getShortString(str, lim) { return str.length > lim ? `${str.substring(0, lim - 1)}...` : str; };
-function openTerminal (terminalElm, { username, host, password }, statusElm) {
+
+function openTerminal ({
+  terminalElm,
+  settings,
+  statusElm
+}) {
+  const { username, host, password } = settings;
   // Terminal.applyAddon(WebfontLoader);
 
   var term = new Terminal({
@@ -112,7 +235,7 @@ function openTerminal (terminalElm, { username, host, password }, statusElm) {
 
   conn
     .on('ready', function() {
-      setSSHStatus(statusElm, 'Client ready', 'info');
+      setSSHStatus(statusElm, 'Client ready', 'success');
 
       conn.shell({ term: 'xterm-256color'}, function(err, stream) {
         if (err) {
@@ -131,7 +254,8 @@ function openTerminal (terminalElm, { username, host, password }, statusElm) {
           })
           .stderr
             .on('data', function(data) {
-              console.warn(data);
+              // console.warn(data);
+              setSSHStatus(statusElm, String(data), 'danger');
               term.write(data.toString());
             });
 
@@ -146,16 +270,30 @@ function openTerminal (terminalElm, { username, host, password }, statusElm) {
       username,
       password
     });
+
+  return conn;
 };
+
 function setSSHStatus(statusElm, str, msgType) {
-  statusElm.innerHTML = getShortString(str, 30);
+  const shortStr = getShortString(str, 30);
+  let resultStr = '';
+
   switch (msgType) {
-    case 'info': statusElm.style.color = 'blue'; break;
-    case 'danger': statusElm.style.color = 'red'; break;
+    case 'success':
+      resultStr = `<span class="icon icon-check"></span> ${shortStr}`;
+      statusElm.style.color = 'green';
+      break;
+    case 'danger':
+      resultStr = `<span class="icon icon-ban"></span> ${shortStr}`;
+      statusElm.style.color = 'red';
+      break;
     // case 'muted':
     default:
-      statusElm.style.color = 'lightgray'; break;
+      resultStr = shortStr;
+      statusElm.style.color = 'lightgray';
+      break;
   }
+  statusElm.innerHTML = resultStr;
   statusElm.setAttribute('title', str);
 }
 

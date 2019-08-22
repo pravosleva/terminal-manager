@@ -1,7 +1,5 @@
 # Terminal manager
 
-![about MEG density](./_imgs/sample.gif)
-
 ## Stack
 
 - [Electron](https://electronjs.org/)
@@ -13,9 +11,10 @@
 - HTML / CSS / JS
 
 ## TODO
-- [ ] Add terminal statuses _(In progress)_
-- [ ] uptime, cpu params (free memory, etc.)
-- [ ] Change settings for the terminal
+- [x] Add terminal statuses
+- [x] `conn.exec('uptime')` for example _(See console)_
+- [ ] cpu params (free memory, etc.)
+- [x] Reset params for the terminal _(Remove and Create new)_
 - [ ] Deploy sample
 - [ ] Save settings to localStorage
 - [ ] Get data from locaStorage and set to app state
@@ -25,6 +24,10 @@ Production mode start.
 
 ### `yarn dev`
 Development mode start.
+
+## Demo
+
+![sample](./_imgs/sample.gif)
 
 ## [example-electron-xterm-ssh2](https://github.com/MyXterm/example-electron-xterm-ssh2) based
 Just an example to demonstrate electron + xterm + ssh2

@@ -42,8 +42,12 @@
     }
     #scrollTopBtn > span { cursor: pointer; }
 
+    #terms {
+      margin: 20px 20px calc(64px + 54px) 20px;
+    }
     #terms > div:not(:last-child) {
-      border-bottom: 2px solid white !important;
+      /* border-bottom: 2px solid white !important; */
+      margin-bottom: 20px;
     }
     .top-btn {
       border: none;
@@ -52,6 +56,12 @@
       outline: none;
     }
     .top-btn:hover { background-color: gray; color: white; }
+
+    #terms > div, #terms > div > div, #terms > div > div > div { border-radius: 5px; }
+    .xterm .xterm-screen canvas {
+      border-radius: inherit;
+      padding: 5px;
+    }
   </style>
 </head>
 <body>
@@ -133,7 +143,7 @@
           <footer class="modal__footer">
             <button
               class="modal__btn modal__btn-primary"
-              onclick="add()"
+              onclick="createNewTerminal()"
             >
               Continue
             </button>
@@ -238,7 +248,7 @@
     // MicroModal.show('modal-1'); // [1]
     // MicroModal.close('modal-1'); // [1]
 
-    const add = () => {
+    const createNewTerminal = () => {
       const name = document.getElementById('name').value;
       const description = document.getElementById('description').value;
       const userHost = document.getElementById('userHost').value;
@@ -294,7 +304,7 @@
       // console.log('---');
       // console.log(mainSpaceScrollTop, mainSpaceOffsetHeight, mainSpaceClientHeight, mainSpaceOffsetTop, termsHeight);
       // console.log(termsScrollTop, termsOffsetHeight, termsClientHeight, termsOffsetTop);
-      if (mainSpaceScrollTop >= termsOffsetTop) {
+      if (mainSpaceScrollTop >= (termsOffsetTop - 20)) {
         navItemHome.classList.remove('active');
         navItemTerminals.classList.add('active');
       } else {
@@ -309,7 +319,7 @@
       mainSpace.scrollTo({ top: 0, behavior: 'smooth' });
     });
     navItemTerminals.addEventListener('click', () => {
-      mainSpace.scrollTo({ top: terms.offsetTop, behavior: 'smooth' });
+      mainSpace.scrollTo({ top: terms.offsetTop - 20, behavior: 'smooth' });
     });
 
     function saveToLS() {
