@@ -1,3 +1,5 @@
+// const WebfontLoader = require('xterm-webfont');
+
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
 window.addEventListener('DOMContentLoaded', () => {
@@ -79,7 +81,15 @@ function removeTerminal (id) {
   termsTabBody.removeChild(window.document.getElementsByClassName(`terms-tab-body-item--${id}`)[0]);
 };
 function openTerminal (elm, { username, host, password }) {
-  var term = new Terminal();
+  // Terminal.applyAddon(WebfontLoader);
+
+  var term = new Terminal({
+    theme: {
+      background: '#272b30'
+    },
+  });
+  // You can also update the theme colors at runtime:
+  // term.setOption('theme', { background: '#fdf6e3' });
   term.open(elm);
 
   var Client = require('ssh2').Client;
