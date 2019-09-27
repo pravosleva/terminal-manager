@@ -6,7 +6,6 @@
   <link rel='stylesheet' href='./css/photon.min.css' />
   <link rel='stylesheet' href='./css/micromodal.css' />
   <!-- AlertifyJS -->
-  <!-- <script src="./vendor/alertifyjs/alertify.js"></script> -->
   <link rel="stylesheet" href="./vendor/alertifyjs/css/alertify.min.css"/>
   <link rel="stylesheet" href="./vendor/alertifyjs/css/themes/default.min.css"/>
   <style>
@@ -46,7 +45,6 @@
       margin: 20px 20px calc(64px + 54px) 20px;
     }
     #terms > div:not(:last-child) {
-      /* border-bottom: 2px solid white !important; */
       margin-bottom: 20px;
     }
     .top-btn {
@@ -66,7 +64,6 @@
 </head>
 <body>
   <div class='window'>
-    <!-- .toolbar-header sits at the top of your app -->
     <header class="toolbar toolbar-header" style='display: flex;'>
       <button style='width: 50%;' data-micromodal-trigger='modal-1' class='top-btn'>Create new Terminal <span class='icon icon-plus-circled'></span></button>
       <button style='width: 50%;' class='top-btn' onclick='saveToLS()'>Save to LS <span class='icon icon-floppy'></span></button>
@@ -99,46 +96,7 @@
                 <label>Description</label>
                 <textarea id="description" class="form-control" rows="3"></textarea>
               </div>
-              <!--
-              <select class="form-control">
-                <option>Option one</option>
-                <option>Option two</option>
-                <option>Option three</option>
-                <option>Option four</option>
-                <option>Option five</option>
-                <option>Option six</option>
-                <option>Option seven</option>
-                <option>Option eight</option>
-              </select>
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox"> This is a checkbox
-                </label>
-              </div>
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox"> This is a checkbox too
-                </label>
-              </div>
-              <div class="radio">
-                <label>
-                  <input type="radio" name="radios" checked>
-                  Keep your options open
-                </label>
-              </div>
-              <div class="radio">
-                <label>
-                  <input type="radio" name="radios">
-                  Be sure to remember to check for unknown unknowns
-                </label>
-              </div>
-              <div class="form-actions">
-                <button type="submit" class="btn btn-form btn-default">Cancel</button>
-                <button type="submit" class="btn btn-form btn-primary">OK</button>
-              </div>
-              -->
             </form>
-
           </main>
           <footer class="modal__footer">
             <button
@@ -153,13 +111,11 @@
       </div>
     </div>
 
-    <!-- Your app's content goes inside .window-content -->
     <div class="window-content">
       <div class="pane-group">
         <div class="pane pane-mini sidebar">
           <nav class="nav-group">
             <h5 class="nav-group-title">Content</h5>
-
             <span class="nav-group-item nav-group-item--home active" style='display: flex; justify-content: center; padding: 0;'><span style='padding: 0; margin: 0;' class="icon icon-home active"></span></span>
             <span class="nav-group-item nav-group-item--terminals" style='display: flex; justify-content: center; padding: 0;'><span style='padding: 0; margin: 0;' class="icon icon-window"></span></span>
           </nav>
@@ -187,7 +143,8 @@
 
   <script type='text/javascript'>
     const alertify = require('alertifyjs');
-    alertify.defaults = { // dialogs defaults
+    alertify.defaults = {
+      // Dialogs defaults:
       autoReset: true,
       basic: false,
       closable: true,
@@ -206,19 +163,19 @@
       resizable: true,
       startMaximized: false,
       transition: 'pulse',
-      // notifier defaults
+      // Notifier defaults:
       notifier:{
         delay: 7, // auto-dismiss wait time (in seconds)
         position: 'bottom-center', // bottom-center is default position
         closeButton: false, // adds a close button to notifier messages
       },
-      // language resources
+      // Language resources:
       glossary:{
         title: 'Terminal manager', // dialogs default title
         ok: 'OK', // ok button text
         cancel: 'Cancel', // cancel button text
       },
-      // theme settings
+      // Theme settings:
       theme:{
         input: 'ajs-input', // class name attached to prompt dialog input textbox.
         ok: 'ajs-ok', // class name attached to ok button
@@ -254,18 +211,13 @@
     });
 
     MicroModal.init({
-      onShow: modal => console.info(`${modal.id} is shown`), // [1]
-      onClose: modal => console.info(`${modal.id} is hidden`), // [2]
-      // openTrigger: 'data-custom-open', // [3]
-      // closeTrigger: 'data-custom-close', // [4]
-      disableScroll: true, // [5]
-      disableFocus: false, // [6]
-      awaitCloseAnimation: false, // [7]
-      debugMode: true // [8]
+      onShow: modal => console.info(`${modal.id} is shown`),
+      onClose: modal => console.info(`${modal.id} is hidden`),
+      disableScroll: true,
+      disableFocus: false,
+      awaitCloseAnimation: false,
+      debugMode: true
     });
-    // EXAMPLE:
-    // MicroModal.show('modal-1'); // [1]
-    // MicroModal.close('modal-1'); // [1]
 
     const createNewTerminal = () => {
       const name = document.getElementById('name').value;
@@ -275,9 +227,9 @@
       const obj = { name, description, userHost, password };
 
       schema.validate({ ...obj })
-        .then(function(valid) { // console.log(valid);
+        .then(function(valid) {
+          // console.log(valid);
           window.addTerminal({ ...obj });
-          // MicroModal.close('modal-1'); // [1]
           document.getElementsByClassName('modal__close')[0].click();
         })
         .catch(err => {
@@ -297,17 +249,10 @@
     const terms = document.getElementById('terms');
 
     mainSpace.addEventListener('scroll', function() {
-      // For window could be like this:
-      // if (this.pageYOffset > 0) { scrollTop.style.transform = 'translateX(0)'; }
-      // else { scrollTop.style.transform = 'translateX(100px)'; };
-
       const mainSpaceScrollTop = mainSpace.scrollTop;
       const mainSpaceOffsetTop = mainSpace.offsetTop;
-      // const termsPositionInfo = terms.getBoundingClientRect();
-      // const termsHeight = termsPositionInfo.height;
       const mainSpaceOffsetHeight = mainSpace.offsetHeight;
       const mainSpaceClientHeight = mainSpace.clientHeight;
-      // console.log(mainSpaceScrollTop, mainSpaceOffsetHeight, mainSpaceClientHeight);
 
       if (mainSpaceOffsetHeight < (mainSpaceScrollTop + mainSpaceClientHeight)) {
         scrollTopBtn.style.transform = 'translateX(0)';
@@ -320,9 +265,6 @@
       const termsOffsetTop = terms.offsetTop;
       const termsOffsetHeight = terms.offsetHeight;
       const termsClientHeight = terms.clientHeight;
-      // console.log('---');
-      // console.log(mainSpaceScrollTop, mainSpaceOffsetHeight, mainSpaceClientHeight, mainSpaceOffsetTop, termsHeight);
-      // console.log(termsScrollTop, termsOffsetHeight, termsClientHeight, termsOffsetTop);
       if (mainSpaceScrollTop >= (termsOffsetTop - 20)) {
         navItemHome.classList.remove('active');
         navItemTerminals.classList.add('active');
