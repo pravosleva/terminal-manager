@@ -14,7 +14,7 @@
     "micromodal": "^0.4.0",
     "path": "^0.12.7",
     "ssh2": "^0.6.1",
-    "terminal-kit": "^1.26.2",
+    "terminal-kit": "^2.1.8",
     "xterm": "^3.6.0",
     "xterm-webfont": "^1.1.1",
     "yup": "^0.27.0"
